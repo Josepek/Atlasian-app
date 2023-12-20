@@ -105,8 +105,8 @@ services:
       - postgresql-data-atl:/var/lib/postgresql/data
     networks:
       my-net:
-      aliases:
-        - nitro-atl-db
+        aliases:
+          - nitro-atl-db
 networks:
   my-net:
     external: true
