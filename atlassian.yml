@@ -1,0 +1,121 @@
+version: "3.4"
+services:
+  jira:
+    image: atlassian/jira-software:latest
+    restart: always
+    container_name: nitro-jira
+    hostname: jira
+    environment:
+      JIRA_HOME: /var/atlassian/application-data/jira/
+      ATL_DB_DRIVER: "org.postgresql.Driver"
+      ATL_DB_TYPE: "postgres72"
+      ATL_JDBC_URL: "jdbc:postgresql://nitro-atl-db:5432/nitro_atlassian_db"
+      ATL_JDBC_USER: "nitro_atlassian_db_user"
+      ATL_JDBC_PASSWORD: "13Keyghobadi68##"
+      #   If Use Reverse Proxy Uncomment this Line
+      #ATL_TOMCAT_SCHEME: 'https'
+      #ATL_TOMCAT_SECURE: 'true'
+      #ATL_PROXY_PORT: '443'
+      #ATL_PROXY_NAME: 'jira.my-site.com'
+      JAVA_OPTS: "-javaagent:/atlassian-agent.jar"
+      JVM_MINIMUM_MEMORY: 512m
+      JVM_MAXIMUM_MEMORY: 4096m
+    volumes:
+      - jira-vol:/var/atlassian/application-data/jira
+      - ./agent/atlassian-agent.bak:/atlassian-agent.jar:ro
+    networks:
+      my-net:
+    depends_on:
+      - postgressql-atlassian
+    ports:
+      - 8090:8080
+
+  confluence:
+    image: atlassian/confluence-server:latest
+    restart: always
+    container_name: nitro-confluence
+    hostname: confluence
+    environment:
+      CONFLUENCE_HOME: /var/atlassian/application-data/confluence/
+      ATL_DB_DRIVER: "org.postgresql.Driver"
+      ATL_DB_TYPE: "postgres72"
+      ATL_JDBC_URL: "jdbc:postgresql://nitro-atl-db:5432/nitro_atlassian_db"
+      ATL_JDBC_USER: "nitro_atlassian_db_user"
+      ATL_JDBC_PASSWORD: "13Keyghobadi68##"
+      #   If Use Reverse Proxy Uncomment this Line
+      #ATL_PROXY_NAME: confluence.my-site.com
+      #ATL_PROXY_PORT: 443
+      #ATL_TOMCAT_SCHEME: 'https'
+      #ATL_TOMCAT_SECURE: 'true'
+      JAVA_OPTS: "-javaagent:/atlassian-agent.jar"
+      JVM_MINIMUM_MEMORY: 512m
+      JVM_MAXIMUM_MEMORY: 4096m
+    volumes:
+      - confluence-data:/var/atlassian/application-data/confluence
+      - ./agent/atlassian-agent.dot:/atlassian-agent.jar:ro
+    networks:
+      my-net:
+    depends_on:
+      - postgressql-atlassian
+    ports:
+      - 8090:8090
+      - 8091:8091
+
+  bitbucket:
+    image: "atlassian/bitbucket-server:latest"
+    container_name: nitro_bitbucket
+    hostname: bitbucket
+    restart: always
+    environment:
+      BITBUCKET_HOME: /var/atlassian/application-data/bitbucket/
+      JDBC_DRIVER: org.postgresql.Driver
+      JDBC_URL: "jdbc:postgresql://nitro-atl-db:5432/nitro_atlassian_db"
+      JDBC_USER: nitro_atlassian_db_user
+      JDBC_PASSWORD:
+        "13Keyghobadi68##"
+        #   If Use Reverse Proxy Uncomment this Line
+        #ATL_PROXY_NAME: confluence.my-site.com
+        #ATL_PROXY_PORT: 443
+        #ATL_TOMCAT_SCHEME: 'https'
+        #ATL_TOMCAT_SECURE: 'true'
+      JAVA_OPTS: "-javaagent:/atlassian-agent.jar"
+      JVM_MINIMUM_MEMORY: 512m
+      JVM_MAXIMUM_MEMORY: 4096m
+    volumes:
+      - bitbucket-Data:/var/atlassian/application-data/bitbucket
+      - ./agent/atlassian-agent-new.jar:/atlassian-agent.jar:ro
+    networks:
+      my-net:
+    depends_on:
+      - postgressql-atlassian
+    ports:
+      - 7990:7990
+      - 7999:7999
+
+  postgressql-atlassian:
+    image: postgres
+    restart: always
+    container_name: postgressql-atlassian
+    hostname: postgressql-atlassian
+    environment:
+      POSTGRES_USER: nitro_atlassian_db_user
+      POSTGRES_PASSWORD: "13Keyghobadi68##"
+      POSTGRES_DB: nitro_atlassian_db
+    volumes:
+      - postgresql-data-atl:/var/lib/postgresql/data
+    networks:
+      my-net:
+      aliases:
+        - nitro-atl-db
+networks:
+  my-net:
+    external: true
+volumes:
+  postgresql-data-atl:
+    name: postgresql-data-atl
+  jira-vol:
+    name: jira-vol
+  confluence-data:
+    name: confluence-data
+  bitbucket-Data:
+    name: bitbucket-Data
